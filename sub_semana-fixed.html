@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>✅ Subtarefas da Semana</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+            background: #f7f8fa;
+            min-height: 100vh;
+            padding: 20px;
+            color: #37352f;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            border-radius: 8px;
+            padding: 32px;
+            margin-bottom: 24px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-left h1 {
+            font-size: 28px;
+            font-weight: 700;
+            color: #37352f;
+            margin-bottom: 8px;
+        }
+
+        .header-left .subtitle {
+            color: #787774;
+            font-size: 14px;
+        }
+
+        .progress-bar-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .progress-bar {
+            width: 200px;
+            height: 6px;
+            background: #e8e8e7;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: #37352f;
+            transition: width 0.3s ease;
+        }
+
+        .progress-text {
+            font-size: 14px;
+            font-weight: 600;
+            color: #37352f;
+        }
+
+        .config-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            border: 1px solid #e8e8e7;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+            font-size: 14px;
+            font-weight: 500;
+            color: #37352f;
+            z-index: 100;
+        }
+
+        .config-btn:hover {
+            background: #f7f8fa;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.4);
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 32px;
+            border-radius: 8px;
+            max-width: 480px;
+            width: 90%;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+        }
+
+        .modal-content h2 {
+            margin-bottom: 8px;
+            color: #37352f;
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .modal-content p {
+            color: #787774;
+            margin-bottom: 24px;
+            font-size: 14px;
+        }
+
+        .modal-content input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #e8e8e7;
+            border-radius: 6px;
+            font-size: 14px;
+            margin-bottom: 16px;
+        }
+
+        .modal-content input:focus {
+            outline: none;
+            border-color: #37352f;
+        }
+
+        .modal-content button {
+            width: 100%;
+            padding: 10px;
+            background: #37352f;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            margin-bottom: 8px;
+        }
+
+        .modal-content button:hover {
+            background: #2c2b28;
+        }
+
+        .modal-content .cancel-btn {
+            background: white;
+            color: #37352f;
+            border: 1px solid #e8e8e7;
+        }
+
+        .modal-content .cancel-btn:hover {
+            background: #f7f8fa;
+        }
+
+        .modal-content .help {
+            background: #f7f8fa;
+            padding: 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            color: #787774;
+            margin-top: 16px;
+        }
+
+        .modal-content .help a {
+            color: #37352f;
+            text-decoration: underline;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 80px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+        }
+
+        .loading .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid #e8e8e7;
+            border-top: 3px solid #37352f;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error {
+            background: white;
+            border: 1px solid #ffebee;
+            padding: 24px;
+            border-radius: 8px;
+            color: #c62828;
+            text-align: center;
+        }
+
+        .category {
+            background: white;
+            border-radius: 8px;
+            padding: 24px;
+            margin-bottom: 16px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+        }
+
+        .category-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #37352f;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .subtask-card {
+            background: #fafafa;
+            border: 1px solid #e8e8e7;
+            border-radius: 6px;
+            padding: 14px;
+            margin-bottom: 8px;
+            transition: box-shadow 0.2s;
+        }
+
+        .subtask-card:hover {
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .subtask-row {
+            display: grid;
+            grid-template-columns: 100px 80px 1fr auto;
+            gap: 16px;
+            align-items: center;
+        }
+
+        .week-timeline {
+            display: flex;
+            gap: 4px;
+            padding: 8px;
+            background: white;
+            border-radius: 4px;
+            border: 1px solid #e8e8e7;
+        }
+
+        .week-day {
+            width: 12px;
+            height: 32px;
+            background: #f0f0f0;
+            border-radius: 2px;
+        }
+
+        .week-day.deadline {
+            background: #ff3b30;
+        }
+
+        .status-badge {
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+            text-align: center;
+            white-space: nowrap;
+        }
+
+        .status-not-started {
+            background: #f0f0f0;
+            color: #666;
+        }
+
+        .status-in-progress {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .status-delayed {
+            background: #ffebee;
+            color: #c62828;
+        }
+
+        .status-done {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .subtask-info {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .subtask-name {
+            font-size: 14px;
+            font-weight: 500;
+            color: #37352f;
+        }
+
+        .subtask-parent {
+            font-size: 12px;
+            color: #787774;
+        }
+
+        .subtask-link {
+            background: #37352f;
+            color: white;
+            text-decoration: none;
+            padding: 6px 16px;
+            border-radius: 4px;
+            font-size: 13px;
+            font-weight: 500;
+            transition: background 0.2s;
+        }
+
+        .subtask-link:hover {
+            background: #2c2b28;
+        }
+
+        .footer {
+            text-align: center;
+            color: #787774;
+            padding: 20px;
+            font-size: 12px;
+            margin-top: 24px;
+        }
+
+        @media (max-width: 768px) {
+            .subtask-row {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 16px;
+            }
+
+            .progress-bar-container {
+                width: 100%;
+            }
+
+            .progress-bar {
+                flex: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <button class="config-btn" onclick="openConfig()">⚙️ Configurar</button>
+
+    <div class="container">
+        <div class="header">
+            <div class="header-left">
+                <h1>✅ Subtarefas da Semana</h1>
+                <div class="subtitle" id="week-range">Carregando...</div>
+            </div>
+            <div class="progress-bar-container">
+                <div class="progress-bar">
+                    <div class="progress-bar-fill" id="overall-progress" style="width: 0%"></div>
+                </div>
+                <div class="progress-text" id="overall-progress-text">0%</div>
+            </div>
+        </div>
+
+        <div id="loading" class="loading">
+            <div class="spinner"></div>
+            <p style="color: #787774;">Carregando subtarefas...</p>
+        </div>
+
+        <div id="error" style="display: none;"></div>
+        <div id="content" style="display: none;"></div>
+
+        <div class="footer">
+            Atualiza automaticamente a cada 5 minutos • Última atualização: <span id="last-update"></span>
+        </div>
+    </div>
+
+    <div id="configModal" class="modal">
+        <div class="modal-content">
+            <h2>🔑 Configuração API ClickUp</h2>
+            <p>Insira seu token API para conectar ao ClickUp</p>
+            
+            <input 
+                type="password" 
+                id="apiTokenInput" 
+                placeholder="pk_..." 
+                autocomplete="off"
+            />
+            
+            <button onclick="saveToken()">Salvar e Conectar</button>
+            <button class="cancel-btn" onclick="closeConfig()">Cancelar</button>
+            
+            <div class="help">
+                <strong>Como obter seu token:</strong><br>
+                1. Vá para <a href="https://app.clickup.com/settings/apps" target="_blank">ClickUp Settings → Apps</a><br>
+                2. Role até "API Token"<br>
+                3. Clique em "Generate" ou copie o existente<br>
+                4. Cole aqui acima
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const CONFIG = {
+            WORKSPACE_ID: '90152320567',
+            REFRESH_INTERVAL: 5 * 60 * 1000
+        };
+
+        const CATEGORIES = {
+            'Saúde': { emoji: '🟢' },
+            'Profissional': { emoji: '🔵' },
+            'Financeira': { emoji: '🟡' }
+        };
+
+        let refreshInterval;
+
+        function openConfig() {
+            document.getElementById('configModal').classList.add('active');
+            const saved = localStorage.getItem('clickup_api_token');
+            if (saved) document.getElementById('apiTokenInput').value = saved;
+        }
+
+        function closeConfig() {
+            document.getElementById('configModal').classList.remove('active');
+        }
+
+        function saveToken() {
+            const token = document.getElementById('apiTokenInput').value.trim();
+            if (!token) {
+                alert('Por favor, insira um token válido');
+                return;
+            }
+            localStorage.setItem('clickup_api_token', token);
+            closeConfig();
+            init();
+        }
+
+        function getWeekDates() {
+            const today = new Date();
+            const monday = new Date(today);
+            monday.setDate(today.getDate() - today.getDay() + (today.getDay() === 0 ? -6 : 1));
+            
+            const sunday = new Date(monday);
+            sunday.setDate(monday.getDate() + 6);
+            
+            return {
+                start: monday.toISOString().split('T')[0],
+                end: sunday.toISOString().split('T')[0],
+                today: today.toISOString().split('T')[0],
+                startFormatted: monday.toLocaleDateString('pt-PT', { day: 'numeric', month: 'long' }),
+                endFormatted: sunday.toLocaleDateString('pt-PT', { day: 'numeric', month: 'long', year: 'numeric' })
+            };
+        }
+
+        function getStatusClass(status, dueDate, today) {
+            if (!status) return 'status-not-started';
+            
+            const statusLower = status.toLowerCase();
+            
+            if (statusLower.includes('done') || statusLower.includes('complete') || statusLower.includes('closed')) {
+                return 'status-done';
+            }
+            
+            if (dueDate && parseInt(dueDate) < new Date(today).getTime()) {
+                return 'status-delayed';
+            }
+            
+            if (statusLower.includes('in progress') || statusLower.includes('doing') || statusLower.includes('active')) {
+                return 'status-in-progress';
+            }
+            
+            return 'status-not-started';
+        }
+
+        function getStatusText(status) {
+            if (!status) return 'Não iniciada';
+            
+            const statusLower = status.toLowerCase();
+            
+            if (statusLower.includes('done') || statusLower.includes('complete')) return 'Concluída';
+            if (statusLower.includes('in progress') || statusLower.includes('doing')) return 'Em progresso';
+            if (statusLower.includes('to do')) return 'Não iniciada';
+            
+            return status;
+        }
+
+        function getDayOfWeek(dueDateString) {
+            if (!dueDateString) return -1;
+            const date = new Date(parseInt(dueDateString));
+            return date.getDay();
+        }
+
+        function renderWeekTimeline(dueDate) {
+            const dayOfWeek = getDayOfWeek(dueDate);
+            
+            let html = '<div class="week-timeline">';
+            for (let i = 1; i <= 7; i++) {
+                const dayIndex = i === 7 ? 0 : i;
+                const isDeadline = dayIndex === dayOfWeek;
+                html += `<div class="week-day ${isDeadline ? 'deadline' : ''}"></div>`;
+            }
+            html += '</div>';
+            
+            return html;
+        }
+
+        async function fetchTasks() {
+            const token = localStorage.getItem('clickup_api_token');
+            if (!token) {
+                openConfig();
+                return;
+            }
+
+            try {
+                document.getElementById('loading').style.display = 'block';
+                document.getElementById('error').style.display = 'none';
+                document.getElementById('content').style.display = 'none';
+
+                const { start, end, today, startFormatted, endFormatted } = getWeekDates();
+                document.getElementById('week-range').textContent = `${startFormatted} - ${endFormatted}`;
+
+                const response = await fetch(`https://api.clickup.com/api/v2/team/${CONFIG.WORKSPACE_ID}/task`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': token,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+        due_date_gt: new Date(start).getTime(),
+        due_date_lt: new Date(end).getTime(),
+        subtasks: true,
+        include_closed: true
+    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Erro API: ${response.status}. Verifique seu token.`);
+                }
+
+                const data = await response.json();
+                renderSubtasks(data.results || [], today);
+
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('content').style.display = 'block';
+                document.getElementById('last-update').textContent = new Date().toLocaleTimeString('pt-PT');
+
+            } catch (error) {
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('error').innerHTML = `
+                    <div class="error">
+                        <h3>Erro ao carregar</h3>
+                        <p>${error.message}</p>
+                        <button onclick="openConfig()" style="margin-top: 20px; padding: 10px 20px; background: #37352f; color: white; border: none; border-radius: 6px; cursor: pointer;">
+                            Reconfigurar Token
+                        </button>
+                    </div>
+                `;
+                document.getElementById('error').style.display = 'block';
+            }
+        }
+
+        function renderSubtasks(results, today) {
+            const organized = {};
+
+            results.forEach(task => {
+                if (!task.hierarchy?.task) return;
+                
+                const category = task.hierarchy?.category?.name?.split(' ')[0] || 'Outros';
+                
+                if (!organized[category]) organized[category] = [];
+                
+                organized[category].push({
+                    id: task.id,
+                    name: task.name,
+                    url: task.url,
+                    parent: task.hierarchy.task.name,
+                    dueDate: task.due_date,
+                    status: task.status
+                });
+            });
+
+            let totalSubtasks = 0;
+            let completedSubtasks = 0;
+            Object.values(organized).forEach(subtasks => {
+                subtasks.forEach(sub => {
+                    totalSubtasks++;
+                    const statusLower = (sub.status || '').toLowerCase();
+                    if (statusLower.includes('done') || statusLower.includes('complete')) {
+                        completedSubtasks++;
+                    }
+                });
+            });
+
+            const overallProgress = totalSubtasks > 0 ? Math.round((completedSubtasks / totalSubtasks) * 100) : 0;
+            document.getElementById('overall-progress').style.width = overallProgress + '%';
+            document.getElementById('overall-progress-text').textContent = overallProgress + '%';
+
+            let html = '';
+
+            Object.entries(CATEGORIES).forEach(([categoryName, config]) => {
+                const subtasks = organized[categoryName] || [];
+                if (subtasks.length === 0) return;
+
+                html += `
+                    <div class="category">
+                        <div class="category-title">
+                            <span>${config.emoji}</span>
+                            <span>${categoryName}</span>
+                        </div>
+                `;
+
+                subtasks.forEach(subtask => {
+                    const statusClass = getStatusClass(subtask.status, subtask.dueDate, today);
+                    const statusText = getStatusText(subtask.status);
+
+                    html += `
+                        <div class="subtask-card">
+                            <div class="subtask-row">
+                                ${renderWeekTimeline(subtask.dueDate)}
+                                <div class="status-badge ${statusClass}">${statusText}</div>
+                                <div class="subtask-info">
+                                    <div class="subtask-name">${subtask.name}</div>
+                                    <div class="subtask-parent">📁 ${subtask.parent}</div>
+                                </div>
+                                <a href="${subtask.url}" target="_blank" class="subtask-link">Abrir</a>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                html += `</div>`;
+            });
+
+            if (totalSubtasks === 0) {
+                html = `
+                    <div class="category">
+                        <p style="text-align: center; color: #787774; padding: 40px;">
+                            🎉 Nenhuma subtarefa esta semana!
+                        </p>
+                    </div>
+                `;
+            }
+
+            document.getElementById('content').innerHTML = html;
+        }
+
+        function init() {
+            fetchTasks();
+            if (refreshInterval) clearInterval(refreshInterval);
+            refreshInterval = setInterval(fetchTasks, CONFIG.REFRESH_INTERVAL);
+        }
+
+        window.addEventListener('load', init);
+    </script>
+</body>
+</html>
