@@ -3,12 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>⚠️ Subtarefas Atrasadas</title>
+<title>✅ Subtarefas da Semana</title>
 
 <style>
 body{font-family:Arial;background:#f7f8fa;padding:20px}
 .container{max-width:1200px;margin:auto}
-.card{background:#fff0f0;padding:15px;margin:10px 0;border-radius:6px}
+.card{background:white;padding:15px;margin:10px 0;border-radius:6px}
 .btn{padding:6px 12px;background:#333;color:white;border:none;border-radius:4px}
 </style>
 </head>
@@ -18,7 +18,7 @@ body{font-family:Arial;background:#f7f8fa;padding:20px}
 <button class="btn" onclick="openConfig()">⚙️ Configurar</button>
 
 <div class="container">
-<h1>⚠️ Subtarefas Atrasadas</h1>
+<h1>✅ Subtarefas da Semana</h1>
 
 <div id="loading">A carregar…</div>
 <div id="content"></div>
@@ -32,7 +32,7 @@ body{font-family:Arial;background:#f7f8fa;padding:20px}
 
 <script>
 
-const TEAM_ID="90152320567";
+const TEAM_ID="278548639";
 
 function openConfig(){
  document.getElementById("config").style.display="block";
@@ -43,17 +43,31 @@ function save(){
  location.reload();
 }
 
+function getWeek(){
+ const d=new Date();
+ const m=new Date(d);
+ m.setDate(d.getDate()-d.getDay()+1);
+ const s=new Date(m);
+ s.setDate(m.getDate()+6);
+
+ return{
+  start:m.toISOString().split("T")[0],
+  end:s.toISOString().split("T")[0]
+ }
+}
+
 async function load(){
 
  const token=localStorage.getItem("clickup_api_token");
  if(!token){openConfig();return;}
+
+ const {start,end}=getWeek();
 
  try{
 
  const res=await fetch(
   `https://api.clickup.com/api/v2/team/${TEAM_ID}/task`,
  {
-  method:"GET",
   headers:{Authorization:token}
  });
 
@@ -61,28 +75,23 @@ async function load(){
 
  const data=await res.json();
 
- const today=new Date().setHours(0,0,0,0);
-
  const list=data.tasks.filter(t=>{
-  if(!t.due_date || !t.parent) return false;
-  return Number(t.due_date)<today;
+  if(!t.due_date) return false;
+  if(!t.parent) return false;
+
+  const d=new Date(Number(t.due_date))
+   .toISOString().split("T")[0];
+
+  return d>=start && d<=end;
  });
 
  let html="";
 
- if(list.length===0){
-  html="<h3>🎉 Nenhuma atrasada</h3>";
- }
-
  list.forEach(t=>{
-
-  const days=Math.ceil(
-   (today-Number(t.due_date))/(1000*60*60*24)
-  );
-
-  html+=`<div class="card">
+  html+=`
+  <div class="card">
    <b>${t.name}</b><br>
-   Atraso: ${days} dias<br>
+   Prazo: ${new Date(Number(t.due_date)).toLocaleDateString("pt-PT")}<br>
    <a href="${t.url}" target="_blank">Abrir</a>
   </div>`;
  });
